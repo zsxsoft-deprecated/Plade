@@ -1,3 +1,6 @@
 [submodule "third-party/clang"]
 	path = third-party/clang
 	url = https://github.com/llvm-mirror/clang
+[submodule "third-party/llvm"]
+	path = third-party/llvm
+	url = https://github.com/llvm-mirror/llvm
