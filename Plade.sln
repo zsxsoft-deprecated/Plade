@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PladeWPFGUI", "PladeWPFGUI\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PladeParser", "PladeParser\PladeParser.vcxproj", "{D338EECD-512F-49C9-B91E-478D543B5C26}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Clang", "Clang\Clang.vcxproj", "{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,16 +39,6 @@ Global
 		{D338EECD-512F-49C9-B91E-478D543B5C26}.Release|x64.Build.0 = Release|x64
 		{D338EECD-512F-49C9-B91E-478D543B5C26}.Release|x86.ActiveCfg = Release|Win32
 		{D338EECD-512F-49C9-B91E-478D543B5C26}.Release|x86.Build.0 = Release|Win32
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Debug|x64.ActiveCfg = Debug|x64
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Debug|x64.Build.0 = Debug|x64
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Debug|x86.ActiveCfg = Debug|Win32
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Debug|x86.Build.0 = Debug|Win32
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Release|Any CPU.ActiveCfg = Release|Win32
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Release|x64.ActiveCfg = Release|x64
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Release|x64.Build.0 = Release|x64
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Release|x86.ActiveCfg = Release|Win32
-		{4AA9D658-B1BE-4946-9B26-A6F3C441D6D4}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
