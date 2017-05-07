@@ -1,0 +1,5 @@
+C:\Projects\Plade\third-party\clang>cmake -G "Visual Studio 15 2017" -T"llvm-vs2014" ../llvm
+
+third-party/clang:
+
+C:\PROGRAM FILES (X86)\MICROSOFT VISUAL STUDIO\2017\COMMUNITY\COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\CMake\bin\cmake.exe  -G "Visual Studio 15 2017" -DCMAKE_INSTALL_PREFIX:PATH="C:\Users\sx\AppData\Local\CMakeBuild\0d8e73ab-eff7-da39-b604-4a6972cb272b\build\install"  --DCMAKE_BUILD_TYPE="Debug" "C:\Projects\Plade\third-party\clang"

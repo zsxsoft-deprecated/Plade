@@ -18,14 +18,12 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="PladeParser.cpp">
+    <ClCompile Include="DllExport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PladeParser.h">
+    <ClInclude Include="DllExport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
