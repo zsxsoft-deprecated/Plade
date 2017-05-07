@@ -4,3 +4,6 @@
 [submodule "third-party/llvm"]
 	path = third-party/llvm
 	url = https://github.com/llvm-mirror/llvm
+[submodule "third-party/rapidjson"]
+	path = third-party/rapidjson
+	url = git@github.com:miloyip/rapidjson.git

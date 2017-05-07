@@ -2,7 +2,8 @@
 //
 #ifdef _WINDOWS
 #include "DllExport.h"
-#include "../third-party/clang/include/clang-c/Index.h"
+#include "clang-c/Index.h"
+#include "rapidjson/document.h"
 #include "windows.h"
 #include <cstdlib>
 #include <ostream>
@@ -21,6 +22,7 @@ PladeParser_API void OpenConsole(void) {
 }
 
 PladeParser_API bool fnPladeParser(LPCWSTR wCharfileName) {
+
 	auto returnFlag = true;
 	auto fileNameSize = WideCharToMultiByte(CP_UTF8, 0, wCharfileName, wcslen(wCharfileName), nullptr, 0, nullptr, nullptr) + 1;
 	auto fileName = new char[fileNameSize];
