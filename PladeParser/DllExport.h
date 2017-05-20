@@ -8,5 +8,9 @@
 #include "windows.h"
 
 
-extern "C" PladeParser_API bool fnPladeParser(LPCWSTR fileName);
-extern "C" PladeParser_API void OpenConsole(void);
+extern "C" {
+	PladeParser_API LPCWSTR fnPladeParser(LPCWSTR fileName);
+	PladeParser_API void OpenConsole();
+	PladeParser_API bool TerminateParser();
+	PladeParser_API LPCSTR GetClangVersion();
+}

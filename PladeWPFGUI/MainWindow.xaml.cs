@@ -22,18 +22,25 @@ namespace PladeWPFGUI
     public partial class MainWindow : Window
     {
         [DllImport("PladeParser.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "fnPladeParser", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int FnPladeParser([In]string FileName);
+        public static extern IntPtr FnPladeParser([In]string fileName);
 
         [DllImport("PladeParser.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int OpenConsole();
 
+        [DllImport("PladeParser.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern string GetClangVersion();
+
+        [DllImport("PladeParser.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool TerminateParser();
 
         public MainWindow()
         {
             InitializeComponent();
-            OpenConsole();
-            var p = FnPladeParser("中文.cpp");
-            
+//            OpenConsole();
+            var data = FnPladeParser("中文.cpp");
+            MessageBox.Show(Marshal.PtrToStringAuto(data));
+            TerminateParser();
+
         }
     }
 }
