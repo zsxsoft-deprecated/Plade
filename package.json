@@ -1,0 +1,19 @@
+{
+  "name": "plade",
+  "version": "0.0.0",
+  "description": "Plade",
+  "main": "app.js",
+  "author": {
+    "name": "sx"
+  },
+  "dependencies": {
+    "bindings": "^1.2.1",
+    "electron": "^1.6.8",
+    "nan": "^2.6.2"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.5.11",
+    "node-gyp": "^3.6.1",
+    "prebuild": "^6.1.0"
+  }
+}

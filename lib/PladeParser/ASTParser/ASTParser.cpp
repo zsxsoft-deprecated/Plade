@@ -7,7 +7,7 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 #include <memory>
-
+                            
 namespace PladeParser {
 	namespace ASTParser {
 #define GetTextWrapper(originalObject, newString)\
@@ -127,9 +127,9 @@ tempStringObjects.push(newString);\
 
 		void GetUsr(Value& single, const CXCursor &cursor) {
 			auto usr = clang_getCursorUSR(cursor);
-			GetTextWrapper(usr, text)
+			GetTextWrapper(usr, text);
 
-				Value string;
+			Value string;
 			string.SetString(text, static_cast<SizeType>(strlen(text)), ret.GetAllocator());
 			single.AddMember("usr", string, ret.GetAllocator());
 		}
@@ -207,4 +207,5 @@ tempStringObjects.push(newString);\
 			return &ret;
 		}
 	}
+#undef GetTextWrapper
 }
