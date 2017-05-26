@@ -1,13 +1,12 @@
 #include "ASTParser.h"
 #include <cstdio>
-#include <cstdlib>
+#include <cstring>
 #include <stack>
 #include <clang-c/Index.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 #include <memory>
-                            
+
 namespace PladeParser {
 	namespace ASTParser {
 #define GetTextWrapper(originalObject, newString)\
@@ -23,6 +22,7 @@ tempStringObjects.push(newString);\
 		using namespace rapidjson;
 		using namespace std;
 		Document ret;
+		Document::AllocatorType& retAllocator = ret.GetAllocator();
 		stack<char*> tempStringObjects;
 
 		void Initialize() {
@@ -41,8 +41,8 @@ tempStringObjects.push(newString);\
 			auto spell = clang_getCursorSpelling(cursor);
 			GetTextWrapper(spell, copiedText);
 			Value string;
-			string.SetString(copiedText, static_cast<SizeType>(strlen(copiedText)), ret.GetAllocator());
-			single.AddMember("text", string, ret.GetAllocator());
+			string.SetString(copiedText, static_cast<SizeType>(strlen(copiedText)), retAllocator);
+			single.AddMember("text", string, retAllocator);
 		}
 
 		void GetType(Value& single, const CXCursor &cursor) {
@@ -54,11 +54,11 @@ tempStringObjects.push(newString);\
 			GetTextWrapper(typeKindName, copiedTypeKindNameString);
 			Value typeObject, typeDataObject, typeKindObject;
 			typeObject.SetObject();
-			typeDataObject.SetString(copiedTypeNameString, strlen(copiedTypeNameString), ret.GetAllocator());
-			typeKindObject.SetString(copiedTypeKindNameString, strlen(copiedTypeKindNameString), ret.GetAllocator());
-			typeObject.AddMember("type", typeDataObject, ret.GetAllocator());
-			typeObject.AddMember("kind", typeKindObject, ret.GetAllocator());
-			single.AddMember("type", typeObject, ret.GetAllocator());
+			typeDataObject.SetString(copiedTypeNameString, static_cast<SizeType>(strlen(copiedTypeNameString)), retAllocator);
+			typeKindObject.SetString(copiedTypeKindNameString, static_cast<SizeType>(strlen(copiedTypeKindNameString)), retAllocator);
+			typeObject.AddMember("type", typeDataObject, retAllocator);
+			typeObject.AddMember("kind", typeKindObject, retAllocator);
+			single.AddMember("type", typeObject, retAllocator);
 		}
 
 		void GetLinkage(Value& single, const CXCursor &cursor) {
@@ -74,8 +74,8 @@ tempStringObjects.push(newString);\
 				default:                       linkageName = "Unknown"; break;
 			}
 			Value linkObject;
-			linkObject.SetString(linkageName.c_str(), static_cast<SizeType>(linkageName.length()), ret.GetAllocator());
-			single.AddMember("link", linkObject, ret.GetAllocator());
+			linkObject.SetString(linkageName.c_str(), static_cast<SizeType>(linkageName.length()), retAllocator);
+			single.AddMember("link", linkObject, retAllocator);
 		}
 
 		void GetParent(Value& single, const CXCursor &cursor, const CXCursor &parent) {
@@ -91,38 +91,48 @@ tempStringObjects.push(newString);\
 			GetTextWrapper(semaParentName, copiedSemaParentNameString);
 			GetTextWrapper(lexParentName, copiedLexParentNameString);
 
-			parentObject.SetString(copiedParentNameString, strlen(copiedParentNameString), ret.GetAllocator());
-			semaParentObject.SetString(copiedSemaParentNameString, strlen(copiedSemaParentNameString), ret.GetAllocator());
-			lexParentObject.SetString(copiedLexParentNameString, strlen(copiedLexParentNameString), ret.GetAllocator());
-			returnObject.AddMember("parent", parentObject, ret.GetAllocator());
-			returnObject.AddMember("semantic", semaParentObject, ret.GetAllocator());
-			returnObject.AddMember("lexicial", lexParentObject, ret.GetAllocator());
-			single.AddMember("parent", returnObject.Move(), ret.GetAllocator());
+			parentObject.SetString(copiedParentNameString, static_cast<SizeType>(strlen(copiedParentNameString)), retAllocator);
+			semaParentObject.SetString(copiedSemaParentNameString, static_cast<SizeType>(strlen(copiedSemaParentNameString)), retAllocator);
+			lexParentObject.SetString(copiedLexParentNameString, static_cast<SizeType>(strlen(copiedLexParentNameString)), retAllocator);
+			returnObject.AddMember("parent", parentObject, retAllocator);
+			returnObject.AddMember("semantic", semaParentObject, retAllocator);
+			returnObject.AddMember("lexicial", lexParentObject, retAllocator);
+			single.AddMember("parent", returnObject.Move(), retAllocator);
 
 		}
 
-		void GetLocation(Value& single, const CXCursor &cursor) {
+
+		bool GetFileNameAndCheckCanWeContinue(Value& single, const CXCursor &cursor) {
 			auto loc = clang_getCursorLocation(cursor);
+			if (clang_Location_isFromMainFile(clang_getCursorLocation(cursor)) == 0) return false;
 			Value location;
 			CXFile file;
 			unsigned line, column, offset;
 			clang_getSpellingLocation(loc, &file, &line, &column, &offset);
+			if (file == nullptr) return false;
+
 			auto fileName = clang_getFileName(file);
 			GetTextWrapper(fileName, fileNameString);
+
+			if (strstr(fileNameString, "Windows Kits") != nullptr || strstr(fileNameString, "/usr/include/") != nullptr) {
+				return false;
+			}
 
 			Value lineValue, columnValue, offsetValue, filenameValue;
 			lineValue.SetInt(line);
 			columnValue.SetInt(column);
 			offsetValue.SetInt(offset);
-			filenameValue.SetString(fileNameString, static_cast<SizeType>(strlen(fileNameString)), ret.GetAllocator());
+			filenameValue.SetString(fileNameString, static_cast<SizeType>(strlen(fileNameString)), retAllocator);
 			location.SetObject();
-			location.AddMember("line", lineValue, ret.GetAllocator());
-			location.AddMember("column", columnValue, ret.GetAllocator());
-			location.AddMember("offset", offsetValue, ret.GetAllocator());
-			location.AddMember("filename", filenameValue, ret.GetAllocator());
+			location.AddMember("line", lineValue, retAllocator);
+			location.AddMember("column", columnValue, retAllocator);
+			location.AddMember("offset", offsetValue, retAllocator);
+			location.AddMember("filename", filenameValue, retAllocator);
 
-			single.AddMember("location", location.Move(), ret.GetAllocator());
+			printf("%s, %d, %d, %d\n", fileNameString, line, column, offset);
 
+			single.AddMember("location", location.Move(), retAllocator);
+			return true;
 		}
 
 		void GetUsr(Value& single, const CXCursor &cursor) {
@@ -130,8 +140,8 @@ tempStringObjects.push(newString);\
 			GetTextWrapper(usr, text);
 
 			Value string;
-			string.SetString(text, static_cast<SizeType>(strlen(text)), ret.GetAllocator());
-			single.AddMember("usr", string, ret.GetAllocator());
+			string.SetString(text, static_cast<SizeType>(strlen(text)), retAllocator);
+			single.AddMember("usr", string, retAllocator);
 		}
 
 		void GetCursorKind(Value& single, const CXCursor &cursor) {
@@ -152,48 +162,51 @@ tempStringObjects.push(newString);\
 			else                                       type = "Unknown";
 			Value Kind, KindObject, KindTypeObject;
 			Kind.SetObject();
-			KindObject.SetString(type, strlen(type), ret.GetAllocator());
-			KindTypeObject.SetString(curKindString, strlen(curKindString), ret.GetAllocator());
-			Kind.AddMember("kind", KindObject, ret.GetAllocator());
-			Kind.AddMember("type", KindTypeObject, ret.GetAllocator());
-			single.AddMember("kind", Kind, ret.GetAllocator());
-
+			KindObject.SetString(type, static_cast<SizeType>(strlen(type)), retAllocator);
+			KindTypeObject.SetString(curKindString, static_cast<SizeType>(strlen(curKindString)), retAllocator);
+			Kind.AddMember("kind", KindObject, retAllocator);
+			Kind.AddMember("type", KindTypeObject, retAllocator);
+			single.AddMember("kind", Kind, retAllocator);
 		}
 
 		void GetIncludedFile(Value& single, const CXCursor &cursor) {
 			auto included = clang_getIncludedFile(cursor);
 			if (included == nullptr) return;
-
 			auto includedFileName = clang_getFileName(included);
 			GetTextWrapper(includedFileName, fileName);
 			Value string;
-			string.SetString(fileName, static_cast<SizeType>(strlen(fileName)), ret.GetAllocator());
-			single.AddMember("included", string, ret.GetAllocator());
+			string.SetString(fileName, static_cast<SizeType>(strlen(fileName)), retAllocator);
+			single.AddMember("included", string, retAllocator);
 		}
 
 		CXChildVisitResult visitChildrenCallback(CXCursor cursor,
 			CXCursor parent,
 			CXClientData client_data) {
 			auto level = *static_cast<unsigned *>(client_data);
+
 			Value single, Level;
 			single.SetObject();
-			Level.SetInt(level);
-			single.AddMember("level", Level, ret.GetAllocator());
 
-			GetIncludedFile(single, cursor);
+			if (!GetFileNameAndCheckCanWeContinue(single, cursor)) {
+				return CXChildVisit_Continue;
+			}
+
+			Level.SetInt(level);
+			single.AddMember("level", Level.Move(), retAllocator);
+
 			GetSpell(single, cursor);
 			GetLinkage(single, cursor);
 			GetCursorKind(single, cursor);
 			GetType(single, cursor);
 			GetParent(single, cursor, parent);
-			GetLocation(single, cursor);
+			GetIncludedFile(single, cursor);
 			GetUsr(single, cursor);
 
-			// visit children recursively
 			auto next = level + 1;
 			clang_visitChildren(cursor, visitChildrenCallback, &next);
+			printf("%d", level);
+			ret.PushBack(single.Move(), retAllocator);
 
-			ret.PushBack(single, ret.GetAllocator());
 			return CXChildVisit_Recurse;
 		}
 

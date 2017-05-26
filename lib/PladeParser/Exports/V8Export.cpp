@@ -1,4 +1,5 @@
 ﻿#include <nan.h>
+#include <iostream>
 #include "GlobalExport.h"
 #include "../ASTParser/ASTParser.h"
 
@@ -9,7 +10,8 @@ void fnPladeParser(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	}
 	auto fileNameV8String = info[0]->ToString();
 	v8::String::Utf8Value fileNameString(fileNameV8String);
-	auto returnData = PladeParser::Exports::fnPladeParser(*fileNameString);
+	auto returnString = PladeParser::Exports::fnPladeParser(*fileNameString);//
+	auto returnData = returnString.c_str();
 	info.GetReturnValue().Set(v8::String::NewFromUtf8(info.GetIsolate(), returnData));
 }
 

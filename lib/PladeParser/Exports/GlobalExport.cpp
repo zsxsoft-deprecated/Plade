@@ -9,17 +9,16 @@
 namespace PladeParser {
 	namespace Exports {
 		
-		const char* fnPladeParser(const char* fileName) {
+		std::string fnPladeParser(const char* fileName) {
 			using namespace PladeParser;
 			const char* returnData = nullptr;
-			const auto paramter = "";
-
+			const char* const paramter[] = { "-ferror-limit=0", "-std=c++1z" };
 			auto index = clang_createIndex(1, 1);
 			auto unit = clang_parseTranslationUnit(
 				index,
-				fileName, &paramter, 0,
+				fileName, &paramter[0], 2,
 				nullptr, 0,
-				CXTranslationUnit_SkipFunctionBodies | CXTranslationUnit_ForSerialization);
+				CXTranslationUnit_CacheCompletionResults);
 
 			rapidjson::StringBuffer buffer;
 			rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -29,7 +28,6 @@ namespace PladeParser {
 					break;
 				}
 				unsigned level = 0;
-				clang_saveTranslationUnit(unit, "Z:\\1233.txt", 0);
 				auto cursor = clang_getTranslationUnitCursor(unit);
 				ASTParser::Initialize();
 				clang_visitChildren(cursor, ASTParser::visitChildrenCallback, &level);
@@ -39,19 +37,17 @@ namespace PladeParser {
 			}
 			clang_disposeTranslationUnit(unit);
 			clang_disposeIndex(index);
-
-			// delete[] wstr;
-		//	delete[] fileName;
-		//	delete[] returnData;
-			return returnData; // @todo may leak memory
+			
+			auto ret =  std::string(returnData); 
+			return ret;
 		}
 
 		const char* GetClangVersion() {
-			return PladeParser::ASTParser::GetClangVersion();
+			return ASTParser::GetClangVersion();
 		}
 
 		bool TerminateParser() {
-			PladeParser::ASTParser::Terminate();
+			ASTParser::Terminate();
 			return true;
 		}
 	}
