@@ -3,14 +3,17 @@
     {
       "target_name": "PladeParser",
       "sources": [
+        "lib/PladeParser/IncludeScanner/IncludeScanner.h",
+        "lib/PladeParser/IncludeScanner/IncludeScanner.cpp",
+        "lib/PladeParser/IncludeScanner/IncludeParser.h",
+        "lib/PladeParser/IncludeScanner/IncludeParser.cpp",
         "lib/PladeParser/ASTParser/ASTParser.h",
         "lib/PladeParser/ASTParser/ASTParser.cpp",
-        "lib/PladeParser/Exports/DllExport.h",
-        "lib/PladeParser/Exports/DllExport.cpp",
         "lib/PladeParser/Exports/GlobalExport.h",
         "lib/PladeParser/Exports/GlobalExport.cpp",
         "lib/PladeParser/Exports/V8Export.h",
         "lib/PladeParser/Exports/V8Export.cpp",
+        "lib/PladeParser/Helpers/LibClangHelper.h",
       ],
       "include_dirs": [
         "<!(node -e \"require('nan')\")",
