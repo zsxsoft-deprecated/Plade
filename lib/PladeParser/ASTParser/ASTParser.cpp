@@ -18,9 +18,20 @@ namespace PladeParser {
 		singleItem = new Value();
 	}
 
+	ASTParser::ASTParser(vector<string> visited) {
+		ret = new Document();
+		ret->Parse("[]");
+		singleItem = new Value();
+		copy(visited.begin(), visited.end(), back_inserter(visitedIncludeMap));
+	}
+
 	ASTParser::~ASTParser() {
 		delete singleItem;
 		delete ret;
+		for (auto &w : subParsers) {
+			delete w;
+		}
+		subParsers.clear();
 	}
 
 	void ASTParser::GetSpell() {
@@ -156,22 +167,36 @@ namespace PladeParser {
 		if (included == nullptr) return;
 		auto includedFileName = clang_getFileName(included);
 		auto fileName = GetTextWrapper(includedFileName);
-		Document* document = Helpers::OpenClangUnit<Document*>(fileName, [](CXTranslationUnit unit) {
-			auto cursor = clang_getTranslationUnitCursor(unit);
-			auto parser = new ASTParser();
-			clang_visitChildren(cursor, parser->visitChildrenCallback, parser);
-			return move(parser->GetJSONDocument());
-		});
+		if (Helpers::isInSystemInclude(fileName)) return;
+		auto validFileNames = Helpers::getExistsExtensions(fileName);
+
+		Value includeArray;
+		includeArray.SetArray();
+		for (auto& w : validFileNames) {
+			if (find(visitedIncludeMap.begin(), visitedIncludeMap.end(), w) != visitedIncludeMap.end()) continue;
+			visitedIncludeMap.push_back(w);
+			Helpers::OpenClangUnit<bool>(w.c_str(), [this, &includeArray](CXTranslationUnit unit) {
+				auto cursor = clang_getTranslationUnitCursor(unit);
+				auto parser = new ASTParser(visitedIncludeMap);
+				clang_visitChildren(cursor, parser->visitChildrenCallback, parser);
+				this->visitedIncludeMap.clear();
+				copy(parser->visitedIncludeMap.begin(), parser->visitedIncludeMap.end(), back_inserter(this->visitedIncludeMap));
+				includeArray.PushBack(parser->GetJSONDocument()->Move(), ret->GetAllocator());
+				subParsers.push_back(parser);
+				return true;
+			});
+		}
+
+		singleItem->AddMember("included", includeArray.Move(), ret->GetAllocator());
 		// Value string;
 		// string.SetString(fileName, static_cast<SizeType>(strlen(fileName)), ret->GetAllocator());
-		singleItem->AddMember("included", document->Move(), ret->GetAllocator());
-		// delete document;
+		// singleItem->AddMember("path", string, ret->GetAllocator());
 	}
 
 	CXChildVisitResult ASTParser::visitChildrenCallback(CXCursor cursor, CXCursor parent, CXClientData client_data) {
 		// auto level = *static_cast<unsigned *>(client_data);
 		auto self = static_cast<ASTParser*>(client_data);
-		
+
 		self->singleItem->SetObject();
 		self->cursor = &cursor;
 		self->parentCursor = &parent;
@@ -184,7 +209,7 @@ namespace PladeParser {
 		Level.SetInt(self->currentLevel);
 		self->singleItem->AddMember("level", Level.Move(), self->ret->GetAllocator());
 
-		self->GetSpell();
+		// self->GetSpell();
 		self->GetLinkage();
 		self->GetCursorKind();
 		self->GetType();
@@ -208,7 +233,7 @@ namespace PladeParser {
 	}
 
 	Document* ASTParser::GetJSONDocument() const {
- 		return ret;
+		return ret;
 	}
 #undef GetTextWrapper
 }

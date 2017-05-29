@@ -3,12 +3,14 @@
 #include <clang-c/Index.h>
 #include <rapidjson/document.h>
 #include "../Helpers/ASTParserParent.h"
+#include <vector>
 
 namespace PladeParser {
 
 	class ASTParser: public Helpers::ASTParserParent {
 	public:
 		ASTParser();
+		explicit ASTParser(std::vector<std::string>);
 		~ASTParser();
 		void GetSpell();
 		void GetType();
@@ -22,11 +24,14 @@ namespace PladeParser {
 		const char* GetClangVersion();
 		rapidjson::Document* GetJSONDocument() const;
 
+		std::vector<std::string> visitedIncludeMap;
+
 	protected:
 		rapidjson::Document* ret;
 		CXCursor* cursor = nullptr;
 		CXCursor* parentCursor = nullptr;
 		rapidjson::Value* singleItem = nullptr;
+		std::vector<ASTParser*> subParsers;
 		int currentLevel = 0;
 	};
 }

@@ -1,30 +1,12 @@
 #ifndef __HELPERS_LIBCLANGHELPER_H_
 #define __HELPERS_LIBCLANGHELPER_H_
 #include <functional>
-
-#define LIBCLANGHELPER_USINGCHARDESTRUCTOR \
-	std::stack<char*> tempStringObjects;\
-	void TempStringDestructor() {\
-		while (!tempStringObjects.empty()) {\
-			auto ptr = tempStringObjects.top();\
-			tempStringObjects.pop();\
-			delete[] ptr;\
-	    }\
-	}
-
-#define LIBCLANGHELPER_WRAPTEXTTOCHAR(originalObject, newString)\
-char* newString;\
-	{\
-auto originalString = clang_getCString(originalObject);\
-auto len = strlen(originalString) + 1;\
-newString = new char[len];\
-strncpy_s(newString, len, originalString, len);\
-clang_disposeString(originalObject);\
-tempStringObjects.push(newString);\
-	}
+#include <vector>
+#include <clang-c/Index.h>
 
 namespace PladeParser {
 	namespace Helpers {
+
 		/**
 		 * \brief Parse a Clang Unit to callback function
 		 * \tparam T
@@ -64,6 +46,21 @@ namespace PladeParser {
 			}
 			return false;
 		}
+
+
+		/**
+		 * \brief Detect a file is a C++/C/ObjC Source file by filename
+		 * \param fileName
+		 * \return
+		 */
+		bool detectIsCppFile(std::string fileName);
+
+		/**
+		 * \brief Find a list of filename which is existed.
+		 * \param fileName
+		 * \return
+		 */
+		std::vector<std::string> getExistsExtensions(std::string fileName);
 	}
 }
 #endif

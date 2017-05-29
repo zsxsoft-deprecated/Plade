@@ -52,22 +52,23 @@ namespace PladeParser {
 				if (fileEntirePath.find("cmake") != string::npos) continue;
 				if (ext == ".cpp" || ext == ".c" || ext == ".cc" || ext == ".m" || ext == ".cxx" || ext == ".c++" || ext == ".hpp" || ext == ".h") {
 
-					auto fileNameStem = filesystem::canonical(path.parent_path().string() + "/" + path.filename().stem().string()).string();
+					auto fileNameStem = path;
+					auto fileNameStemString = fileNameStem.replace_extension("").string();
+
 					auto ret = GetIncludeFiles(path.string().c_str());
 					if (ext[1] != 'h') {
-						extensions[fileNameStem] = path.extension().string();
+						extensions[fileNameStemString] = path.extension().string();
 					}
-					if (graph.find(fileNameStem) == graph.end()) {
-						graph.insert(pair<string, vector<string>>(fileNameStem, vector<string>()));
+					if (graph.find(fileNameStemString) == graph.end()) {
+						graph.insert(pair<string, vector<string>>(fileNameStemString, vector<string>()));
 					}
-					if (indegrees.find(fileNameStem) == indegrees.end()) {
-						indegrees.insert(pair<string, int>(fileNameStem, 0));
+					if (indegrees.find(fileNameStemString) == indegrees.end()) {
+						indegrees.insert(pair<string, int>(fileNameStemString, 0));
 					}
 					for (auto &w : ret) {
 						filesystem::path returnPath(w);
-						auto removeExtensionPath = filesystem::canonical(
-							returnPath.parent_path().string() + "/" + returnPath.filename().stem().string()).string();
-						graph[fileNameStem].push_back(removeExtensionPath);
+						auto removeExtensionPath = returnPath.replace_extension("").string();
+						graph[fileNameStemString].push_back(removeExtensionPath);
 
 						if (indegrees.find(removeExtensionPath) == indegrees.end()) {
 							indegrees.insert(pair<string, int>(removeExtensionPath, 1));
@@ -100,7 +101,8 @@ namespace PladeParser {
 			while (!setOfIndegrees.empty()) {
 				auto v = setOfIndegrees.front();
 				setOfIndegrees.pop();
-				results.push_back(v + extensions[v]);
+				if (extensions.find(v) != extensions.end())
+					results.push_back(v + extensions[v]);
 				auto vec = graph.find(v);
 				if (vec != graph.end()) {
 					for (auto &w : vec->second) {
