@@ -36,7 +36,7 @@ namespace PladeParser {
 		template<typename T> T OpenClangUnit(
 			const char* fileName,
 			std::function<T(CXTranslationUnit)> callback,
-			unsigned CXTranslationUnitFlags = CXTranslationUnit_CacheCompletionResults
+			unsigned CXTranslationUnitFlags = CXTranslationUnit_CacheCompletionResults | CXTranslationUnit_DetailedPreprocessingRecord
 		) {
 			using namespace PladeParser;
 			T returnData;

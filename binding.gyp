@@ -14,6 +14,7 @@
         "lib/PladeParser/Exports/V8Export.h",
         "lib/PladeParser/Exports/V8Export.cpp",
         "lib/PladeParser/Helpers/LibClangHelper.h",
+        "lib/PladeParser/Helpers/ASTParserParent.h",
       ],
       "include_dirs": [
         "<!(node -e \"require('nan')\")",

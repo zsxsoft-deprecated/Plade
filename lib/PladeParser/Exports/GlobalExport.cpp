@@ -14,29 +14,29 @@
 namespace PladeParser {
 	namespace Exports {
 
-		void GetMainFile(const char* fileName) {
-			IncludeScanner::FindMainFile(fileName);
+		std::vector<std::string> FindMainFile(const char* fileName) {
+			return IncludeScanner::FindMainFile(fileName);
 		}
 
 		std::string ParseCode(const char* fileName) {
 			return Helpers::OpenClangUnit<std::string>(fileName, [](CXTranslationUnit unit) {
-				unsigned level = 0;
 				auto cursor = clang_getTranslationUnitCursor(unit);
+				auto parser = new ASTParser();
 				rapidjson::StringBuffer buffer;
 				rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-				ASTParser::Initialize();
-				clang_visitChildren(cursor, ASTParser::visitChildrenCallback, &level);
-				ASTParser::GetJSONDocument()->Accept(writer);
-				return std::string(buffer.GetString());
+				clang_visitChildren(cursor, ASTParser::visitChildrenCallback, parser);
+				parser->GetJSONDocument()->Accept(writer);
+				auto ret = std::string(buffer.GetString());
+				delete parser;
+				return ret;
 			});
 		}
 
 		const char* GetClangVersion() {
-			return ASTParser::GetClangVersion();
+			return ASTParser().GetClangVersion();
 		}
 
 		bool TerminateParser() {
-			ASTParser::Terminate();
 			return true;
 		}
 	}

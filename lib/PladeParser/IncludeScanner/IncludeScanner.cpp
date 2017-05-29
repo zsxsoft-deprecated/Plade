@@ -1,23 +1,24 @@
-#include <vector>
-#include <string>
-#include <clang-c/Index.h>
 #include <experimental/filesystem>
-#include "IncludeParser.h"
-#include "../Helpers/LibClangHelper.h"
 #include <iostream>
+#include <string>
 #include <map>
 #include <queue>
+#include <vector>
+
+#include <clang-c/Index.h>
+#include "IncludeParser.h"
+#include "../Helpers/LibClangHelper.h"
 
 namespace PladeParser {
 	namespace IncludeScanner {
 		using namespace std;
 		using namespace experimental;
-		map<string, vector<string>> graph;
-		map<string, int> indegrees;
-		queue<string> setOfIndegrees;
-		vector<string> results;
-		int edges = 0;
 
+		/**
+		 * \brief Get a list of the included filename from the param
+		 * \param fileName
+		 * \return
+		 */
 		vector<string> GetIncludeFiles(const char* fileName) {
 			Initialize();
 			return Helpers::OpenClangUnit<vector<string>>(fileName, [](CXTranslationUnit unit) {
@@ -27,7 +28,20 @@ namespace PladeParser {
 			}, CXTranslationUnit_DetailedPreprocessingRecord | CXTranslationUnit_SkipFunctionBodies);
 		}
 
-		void FindMainFile(const char* directionaryPath) {
+		/**
+		 * \brief Find the entrypoint in a project
+		 * \param directionaryPath
+		 * \return
+		 */
+		vector<string> FindMainFile(const char* directionaryPath) {
+
+			map<string, vector<string>> graph;
+			map<string, string> extensions;
+			map<string, int> indegrees;
+			queue<string> setOfIndegrees;
+			vector<string> results;
+			auto edges = 0;
+
 			// Build include graph
 			for (auto &p : filesystem::recursive_directory_iterator(directionaryPath)) {
 				filesystem::path path = p.path();
@@ -37,8 +51,12 @@ namespace PladeParser {
 				transform(fileEntirePath.begin(), fileEntirePath.end(), fileEntirePath.begin(), ::tolower);
 				if (fileEntirePath.find("cmake") != string::npos) continue;
 				if (ext == ".cpp" || ext == ".c" || ext == ".cc" || ext == ".m" || ext == ".cxx" || ext == ".c++" || ext == ".hpp" || ext == ".h") {
+
 					auto fileNameStem = filesystem::canonical(path.parent_path().string() + "/" + path.filename().stem().string()).string();
 					auto ret = GetIncludeFiles(path.string().c_str());
+					if (ext[1] != 'h') {
+						extensions[fileNameStem] = path.extension().string();
+					}
 					if (graph.find(fileNameStem) == graph.end()) {
 						graph.insert(pair<string, vector<string>>(fileNameStem, vector<string>()));
 					}
@@ -62,14 +80,14 @@ namespace PladeParser {
 				}
 			}
 
-
-
+#ifdef DEBUG
 			for (auto &w : graph) {
 				cout << "******************************" << endl << w.first << endl;
 				for (auto &p : w.second) {
 					cout << p << endl;
 				}
 			}
+#endif
 
 			// Get a set of Zero Indegree
 			for (auto &w : indegrees) {
@@ -82,7 +100,7 @@ namespace PladeParser {
 			while (!setOfIndegrees.empty()) {
 				auto v = setOfIndegrees.front();
 				setOfIndegrees.pop();
-				results.push_back(v);
+				results.push_back(v + extensions[v]);
 				auto vec = graph.find(v);
 				if (vec != graph.end()) {
 					for (auto &w : vec->second) {
@@ -93,16 +111,14 @@ namespace PladeParser {
 					}
 				}
 			}
-			if (edges != 0) {
-				// Has cycle
+
+			/*
+			if (edges != 0) { // Has cycle
+				return vector<string>();
 			}
+			*/
 
-			cout << "###########################" << endl;
-			for (auto &w : results) {
-				cout << w << endl;;
-			}
-
-
+			return results;
 		}
 	}
 }

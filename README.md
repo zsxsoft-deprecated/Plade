@@ -9,10 +9,17 @@
 
 ## 编译
 
-1. 安装``Nodejs``和[node-gyp](https://github.com/nodejs/node-gyp)，参考其安装条件。
+### 环境要求
+
+1. Nodejs 7.0+
+1. Python 2.7
+1. (Windows) Visual Studio 2017 / (*nix) g++ 5.4+ / clang （连gyp配置都还没有写，根本编译不起来的啦。反正需要支持C++17的编译器。）
+
+### 编译方式
 1. ``git clone https://github.com/zsxsoft/Plade``
 1. ``npm install electron -g``
 1. ``npm install``
+1. 下载并安装LLVM。
 1. Windows用户需要把``x64``的``llvm/lib``下的所有文件复制到``third-party/x64/clang``，把``x86``的``llvm/lib``下的所有文件复制到``third-party/x86/clang``。*nix还没测试，我猜安装libclang就可以啦。
 1. ``node-gyp rebuild --target=1.6.8 --arch=x64 --dist-url=https://atom.io/download/electron --debug``
 

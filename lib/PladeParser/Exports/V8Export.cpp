@@ -16,7 +16,7 @@ void fnPladeParser(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 void GetClangVersion(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-	auto ret = PladeParser::ASTParser::GetClangVersion();
+	auto ret = PladeParser::Exports::GetClangVersion();
 	info.GetReturnValue().Set(v8::String::NewFromUtf8(info.GetIsolate(), ret));
 }
 
@@ -28,20 +28,22 @@ void GetMainFile(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	}
 	auto fileNameV8String = info[0]->ToString();
 	v8::String::Utf8Value fileNameString(fileNameV8String);
-	PladeParser::Exports::GetMainFile(*fileNameString);
-	info.GetReturnValue().Set(true);
+	auto mainFileArray = PladeParser::Exports::FindMainFile(*fileNameString);
+
+	auto array = v8::Array::New(info.GetIsolate(), mainFileArray.size());
+	for (auto it = mainFileArray.begin(); it < mainFileArray.end(); ++it) {
+		std::cout << *it << std::endl;
+		array->Set(distance(mainFileArray.begin(), it), v8::String::NewFromUtf8(info.GetIsolate(), it->c_str()));
+	}
+
+	info.GetReturnValue().Set(array);
 }
 
-void TerminateParser(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-	PladeParser::ASTParser::Terminate();
-	info.GetReturnValue().Set(true);
-}
 
 void Init(v8::Local<v8::Object> exports) {
-  exports->Set(Nan::New("parse").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(fnPladeParser)->GetFunction());
-  exports->Set(Nan::New("version").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(GetClangVersion)->GetFunction());
-  exports->Set(Nan::New("terminate").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(TerminateParser)->GetFunction());
-  exports->Set(Nan::New("main").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(GetMainFile)->GetFunction());
+	exports->Set(Nan::New("parse").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(fnPladeParser)->GetFunction());
+	exports->Set(Nan::New("version").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(GetClangVersion)->GetFunction());
+	exports->Set(Nan::New("main").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(GetMainFile)->GetFunction());
 }
 
 NODE_MODULE(PladeParser, Init)
