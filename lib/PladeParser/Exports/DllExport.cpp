@@ -11,13 +11,14 @@ __declspec(dllexport) void OpenConsole(void) {
 	freopen_s(&out, "CONOUT$", "w", stderr);
 }
 
+
 __declspec(dllexport) LPCWSTR fnPladeParser(LPCWSTR wCharfileName) {
 	auto fileNameSize = WideCharToMultiByte(CP_UTF8, 0, wCharfileName, wcslen(wCharfileName), nullptr, 0, nullptr, nullptr) + 1;
 	auto fileName = new char[fileNameSize];
 	WideCharToMultiByte(CP_UTF8, 0, wCharfileName, wcslen(wCharfileName), fileName, fileNameSize, nullptr, nullptr);
 	fileName[fileNameSize - 1] = '\0';
 
-	auto returnString = PladeParser::Exports::fnPladeParser(fileName);
+	auto returnString = PladeParser::Exports::ParseCode(fileName);
 	auto returnData = returnString.c_str();
 
 	auto wcharReturnSize = MultiByteToWideChar(CP_UTF8, 0, returnData, -1, nullptr, 0);

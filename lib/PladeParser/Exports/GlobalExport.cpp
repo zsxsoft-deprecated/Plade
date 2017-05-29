@@ -1,45 +1,34 @@
-﻿#include "clang-c/Index.h"
+﻿#include "GlobalExport.h"
+
+#include "clang-c/Index.h"
 #include "rapidjson/document.h"
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <functional>
+#include <vector>
 
 #include "../ASTParser/ASTParser.h"
-#include "GlobalExport.h"
+#include "../Helpers/LibClangHelper.h"
+#include "../IncludeScanner/IncludeScanner.h"
 
 namespace PladeParser {
 	namespace Exports {
-		
-		std::string fnPladeParser(const char* fileName) {
-			using namespace PladeParser;
-			const char* returnData = nullptr;
-			const char* const paramter[] = { "-ferror-limit=0", "-std=c++1z" };
-			auto index = clang_createIndex(1, 1);
-			auto unit = clang_parseTranslationUnit(
-				index,
-				fileName, &paramter[0], 2,
-				nullptr, 0,
-				CXTranslationUnit_CacheCompletionResults);
 
-			rapidjson::StringBuffer buffer;
-			rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+		void GetMainFile(const char* fileName) {
+			IncludeScanner::FindMainFile(fileName);
+		}
 
-			while (true) {
-				if (unit == nullptr) {
-					break;
-				}
+		std::string ParseCode(const char* fileName) {
+			return Helpers::OpenClangUnit<std::string>(fileName, [](CXTranslationUnit unit) {
 				unsigned level = 0;
 				auto cursor = clang_getTranslationUnitCursor(unit);
+				rapidjson::StringBuffer buffer;
+				rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 				ASTParser::Initialize();
 				clang_visitChildren(cursor, ASTParser::visitChildrenCallback, &level);
 				ASTParser::GetJSONDocument()->Accept(writer);
-				returnData = buffer.GetString();
-				break;
-			}
-			clang_disposeTranslationUnit(unit);
-			clang_disposeIndex(index);
-			
-			auto ret =  std::string(returnData); 
-			return ret;
+				return std::string(buffer.GetString());
+			});
 		}
 
 		const char* GetClangVersion() {

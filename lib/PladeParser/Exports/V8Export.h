@@ -1,16 +1,11 @@
-#pragma once
+#ifndef __EXPORTS_V8EXPORT_H_
+#define __EXPORTS_V8EXPORT_H_
+#include <nan.h>
 
-#ifdef PladeParser_EXPORTS
-#define PladeParser_API __declspec(dllexport)
-#else
-#define PladeParser_API __declspec(dllimport)
+void fnPladeParser(const Nan::FunctionCallbackInfo<v8::Value>& info);
+void GetClangVersion(const Nan::FunctionCallbackInfo<v8::Value>& info);
+void GetMainFile(const Nan::FunctionCallbackInfo<v8::Value>& info);
+void TerminateParser(const Nan::FunctionCallbackInfo<v8::Value>& info);
+void Init(v8::Local<v8::Object> exports);
+
 #endif
-#include "windows.h"
-
-
-extern "C" {
-	__declspec(dllexport) LPCWSTR fnPladeParser(LPCWSTR fileName);
-	__declspec(dllexport) void OpenConsole();
-	__declspec(dllexport) bool TerminateParser();
-	__declspec(dllexport) LPCSTR GetClangVersion();
-}

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ASTPARSER_ASTPARSER_H_
+#define __ASTPARSER_ASTPARSER_H_
 #include <clang-c/Index.h>
 #include <rapidjson/document.h>
 
@@ -19,6 +20,5 @@ namespace PladeParser {
 		const char* GetClangVersion();
 		rapidjson::Document* GetJSONDocument();
 	}
-
-
 }
+#endif

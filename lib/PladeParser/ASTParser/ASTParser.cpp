@@ -6,35 +6,23 @@
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <memory>
+#include "../Helpers/LibClangHelper.h"
 
 namespace PladeParser {
 	namespace ASTParser {
-#define GetTextWrapper(originalObject, newString)\
-char* newString;\
-	{\
-auto originalString = clang_getCString(originalObject);\
-auto len = strlen(originalString) + 1;\
-newString = new char[len];\
-strncpy_s(newString, len, originalString, len);\
-clang_disposeString(originalObject);\
-tempStringObjects.push(newString);\
-	}
+#define GetTextWrapper LIBCLANGHELPER_WRAPTEXTTOCHAR
 		using namespace rapidjson;
 		using namespace std;
 		Document ret;
 		Document::AllocatorType& retAllocator = ret.GetAllocator();
-		stack<char*> tempStringObjects;
+		LIBCLANGHELPER_USINGCHARDESTRUCTOR
 
 		void Initialize() {
 			ret.Parse("[]");
 		}
 
 		void Terminate() {
-			while (!tempStringObjects.empty()) {
-				auto ptr = tempStringObjects.top();
-				tempStringObjects.pop();
-				delete[] ptr;
-			}
+			TempStringDestructor();
 		}
 
 		void GetSpell(Value& single, const CXCursor &cursor) {
@@ -113,10 +101,8 @@ tempStringObjects.push(newString);\
 
 			auto fileName = clang_getFileName(file);
 			GetTextWrapper(fileName, fileNameString);
-
-			if (strstr(fileNameString, "Windows Kits") != nullptr || strstr(fileNameString, "/usr/include/") != nullptr) {
-				return false;
-			}
+			if (Helpers::isInSystemInclude(fileNameString)) return false;
+			
 
 			Value lineValue, columnValue, offsetValue, filenameValue;
 			lineValue.SetInt(line);
