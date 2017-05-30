@@ -15,11 +15,11 @@ namespace PladeParser {
 	namespace Exports {
 
 		std::vector<std::string> FindMainFile(const char* fileName) {
-			return IncludeScanner::FindMainFile(fileName);
+			return IncludeScanner::FindMainFile(Helpers::UTF8ToLocate(fileName));
 		}
 
 		std::string ParseCode(const char* fileName) {
-			return Helpers::OpenClangUnit<std::string>(fileName, [](CXTranslationUnit unit) {
+			return Helpers::OpenClangUnit<std::string>(Helpers::UTF8ToLocate(fileName), [](CXTranslationUnit unit) {
 				auto cursor = clang_getTranslationUnitCursor(unit);
 				auto parser = new ASTParser();
 				rapidjson::StringBuffer buffer;

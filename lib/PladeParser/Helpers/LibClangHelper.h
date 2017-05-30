@@ -3,9 +3,21 @@
 #include <functional>
 #include <vector>
 #include <clang-c/Index.h>
+#ifdef _WIN32
+#include <codecvt>
+#include <cvt/wstring>
+#include <windows.h>
+#endif
 
 namespace PladeParser {
 	namespace Helpers {
+
+		/**
+		 * \brief UTF-8 char* to ANSI char* (Important in Windows)
+		 * \param fileNameChar 
+		 * \return 
+		 */
+		const char* UTF8ToLocate(const char* fileNameChar);
 
 		/**
 		 * \brief Parse a Clang Unit to callback function
