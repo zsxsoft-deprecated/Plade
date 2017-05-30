@@ -1,39 +1,53 @@
 import * as React from 'react'
 import * as fs from 'fs'
 import * as path from 'path'
-import { observer } from 'mobx-react'
+import { observer, inject } from 'mobx-react'
 import { css } from 'office-ui-fabric-react/lib/Utilities'
 import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button'
 import { List } from 'office-ui-fabric-react/lib/List'
 import Page from '../../components/Page'
 import AnalyzeQueue from '../../../shared/analyzeQueue'
+import GlobalState, { FileASTStatusEnum, IFileASTStatus } from '../../stores/GlobalState'
 
-interface FolderState {
-  files: string[]
-}
-
-@observer
-export default class Folders extends Page<FolderState> {
+@inject('store') @observer
+export default class Folders extends Page<{}> {
+  store: GlobalState
+  listRef: any
 
   constructor (props: any) {
     super(props)
-    this.state = {
-      files: []
-    }
+    this.store = this.props.store
+  }
+
+  componentWillReact () {
+    console.log(this)
   }
 
   componentDidMount () {
-    const currentPath = this.context.mobxStores.store.scanPath
-    const files = fs.readdirSync(currentPath).filter(file => fs.statSync(path.resolve(currentPath, file)).isDirectory())
-    this.setState({files})
+    const currentPath = this.store.scanPath
+    const files = fs.readdirSync(currentPath).filter(file => fs.statSync(path.resolve(currentPath, file)).isDirectory()).map(path => ({
+      path,
+      size: 0,
+      status: FileASTStatusEnum.none
+    }))
+    this.store.fileASTStatus = files
   }
 
   startAnalyze = () => {
-    const currentPath = this.context.mobxStores.store.scanPath
-    AnalyzeQueue.startQueue(this.state.files.map(file => path.resolve(currentPath, file)), (item: string) => {
-      console.log(item)
-    }, (item: string, message: any) => {
+    const currentPath = this.store.scanPath
+    AnalyzeQueue.startQueue(this.store.fileASTStatus.map(file => path.resolve(currentPath, file.path)),
+    (item: string, index: number, data: any) => {
+      this.store.setFileStatusById(index, {
+        size: data.size,
+        status: FileASTStatusEnum.succeed
+      })
+      this.listRef.forceUpdate()
+    }, (item: string, index: number, message: any) => {
       console.error(item, message)
+      this.store.setFileStatusById(index, {
+        size: 0,
+        status: FileASTStatusEnum.failed
+      })
     })
   }
 
@@ -41,14 +55,24 @@ export default class Folders extends Page<FolderState> {
     this.props.history.replace('/')
   }
 
+  setListRef = (ref: any) => {
+    this.listRef = ref
+  }
+
   render () {
-    const cells = (item: string, index: number) => (
+    const cells = (item: IFileASTStatus, index: number) => (
       <div className='ms-ListScrollingExample-itemCell' data-is-focusable={true}>
         <div className={ css('ms-ListScrollingExample-itemContent', {
           'ms-ListScrollingExample-itemContent-even': index % 2 === 0,
           'ms-ListScrollingExample-itemContent-odd': index % 2 === 1
         }) }>
-        {index} &nbsp; {item}
+        <div
+          className='ms-ListBasicExample-itemContent'
+          style={{color: item.status === FileASTStatusEnum.succeed ? 'green' : item.status === FileASTStatusEnum.failed ? 'red' : 'auto'}}
+          >
+          <div className='ms-ListBasicExample-itemName ms-font-xl'>{item.path}</div>
+          <div className='ms-ListBasicExample-itemIndex'>分析大小：{Math.floor(item.size / 1024)} KiB</div>
+        </div>
         </div>
       </div>)
 
@@ -57,7 +81,8 @@ export default class Folders extends Page<FolderState> {
         <div className='ms-Grid-row'>
           <div className='ms-Grid-col ms-sm5'>
             <List
-              items={this.state.files}
+              items={this.store.fileASTStatus}
+              ref={this.setListRef}
               onRenderCell={cells}
             />
           </div>
