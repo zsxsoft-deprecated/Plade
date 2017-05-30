@@ -7,7 +7,10 @@ import GlobalState from '../stores/GlobalState'
 import { Fabric } from 'office-ui-fabric-react/lib/Fabric'
 
 import StartScreen from '../pages/StartScreen'
+import Folders from '../pages/Folders'
 
+import 'office-ui-fabric-react/dist/css/fabric.min.css'
+import './App.scss'
 
 @observer
 export default class App extends React.Component<{ store: GlobalState }, any> {
@@ -25,6 +28,7 @@ export default class App extends React.Component<{ store: GlobalState }, any> {
           <Fabric>
             <div className='wrapper'>
               <Route exact={true} path='/' component={StartScreen} />
+              <Route exact={true} path='/folders' component={Folders} />
             </div>
             {process.env.NODE_ENV === 'development' ? <DevTools /> : null}
           </Fabric>

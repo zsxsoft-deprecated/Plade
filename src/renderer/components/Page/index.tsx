@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { observer, inject } from 'mobx-react'
 
-import AppState from '../../stores/AppState'
+import AppState from '../../stores/GlobalState'
 import { PageProps } from './Page.d'
 
 @inject('score') @observer
-export default class Page extends React.PureComponent<PageProps, any> {
+export default class Page<T> extends React.PureComponent<PageProps, T> {
   store: AppState
 
   constructor (props: any) {

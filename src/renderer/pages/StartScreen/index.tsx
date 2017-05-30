@@ -7,7 +7,7 @@ import showOpenDialog from '../../../ipc/showOpenDialog'
 import './index.scss'
 
 @observer
-export default class StartScreen extends Page {
+export default class StartScreen extends Page<any> {
 
   constructor (props: any) {
     super(props)
@@ -19,6 +19,7 @@ export default class StartScreen extends Page {
     }).then((list: string[]) => {
       if (list !== null) {
         this.context.mobxStores.store.setScanPath(list[0])
+        this.props.history.push('/folders')
       }
     })
   }
