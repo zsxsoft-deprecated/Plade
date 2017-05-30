@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { inject, observer } from 'mobx-react'
-import { Redirect } from 'react-router-dom'
-import AppState from '../stores/AppState'
+import AppState from '../stores/GlobalState'
 
 export default function DataWrapper (Component: any): any {
   @inject('store') @observer
@@ -15,8 +14,6 @@ export default function DataWrapper (Component: any): any {
 
     componentDidMount () {
       console.log(this.props)
-//      let pathname = this.props.match.url
-//      let id = this.props.match.id ? this.props.match.id : null
     }
 
     // tslint:disable-next-line:no-empty

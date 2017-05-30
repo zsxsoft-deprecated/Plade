@@ -50,7 +50,7 @@ module.exports = merge.smart(baseConfig, {
     // ],
     rules: [
       {
-        test: /\.global\.css$/,
+        test: /\.css$/,
         use: [
           {
             loader: 'style-loader'
@@ -59,30 +59,13 @@ module.exports = merge.smart(baseConfig, {
             loader: 'css-loader',
             options: {
               sourceMap: true
-            }
-          }
-        ]
-      },
-      {
-        test: /^((?!\.global).)*\.css$/,
-        use: [
-          {
-            loader: 'style-loader'
-          },
-          {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              sourceMap: true,
-              importLoaders: 1,
-              localIdentName: '[name]__[local]__[hash:base64:5]'
             }
           }
         ]
       },
       // Add SASS support  - compile all .global.scss files and pipe it to style.css
       {
-        test: /\.global\.scss$/,
+        test: /\.scss$/,
         use: [
           {
             loader: 'style-loader'
@@ -91,27 +74,6 @@ module.exports = merge.smart(baseConfig, {
             loader: 'css-loader',
             options: {
               sourceMap: true
-            }
-          },
-          {
-            loader: 'sass-loader'
-          }
-        ]
-      },
-      // Add SASS support  - compile all other .scss files and pipe it to style.css
-      {
-        test: /^((?!\.global).)*\.scss$/,
-        use: [
-          {
-            loader: 'style-loader'
-          },
-          {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              sourceMap: true,
-              importLoaders: 1,
-              localIdentName: '[name]__[local]__[hash:base64:5]'
             }
           },
           {

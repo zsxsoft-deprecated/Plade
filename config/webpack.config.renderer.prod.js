@@ -26,29 +26,15 @@ module.exports = merge.smart(baseConfig, {
     rules: [
       // Extract all .global.css to style.css as is
       {
-        test: /\.global\.css$/,
+        test: /\.css$/,
         use: ExtractTextPlugin.extract({
           use: 'css-loader',
           fallback: 'style-loader'
         })
       },
-      // Pipe other styles through css modules and srcend to style.css
-      {
-        test: /^((?!\.global).)*\.css$/,
-        use: ExtractTextPlugin.extract({
-          use: {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              importLoaders: 1,
-              localIdentName: '[name]__[local]__[hash:base64:5]'
-            }
-          }
-        })
-      },
       // Add SASS support  - compile all .global.scss files and pipe it to style.css
       {
-        test: /\.global\.scss$/,
+        test: /\.scss$/,
         use: ExtractTextPlugin.extract({
           use: [
             {
@@ -59,23 +45,6 @@ module.exports = merge.smart(baseConfig, {
             }
           ],
           fallback: 'style-loader'
-        })
-      },
-      // Add SASS support  - compile all other .scss files and pipe it to style.css
-      {
-        test: /^((?!\.global).)*\.scss$/,
-        use: ExtractTextPlugin.extract({
-          use: [{
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              importLoaders: 1,
-              localIdentName: '[name]__[local]__[hash:base64:5]'
-            }
-          },
-          {
-            loader: 'sass-loader'
-          }]
         })
       },
       // WOFF Font

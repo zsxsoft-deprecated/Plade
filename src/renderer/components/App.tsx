@@ -9,7 +9,7 @@ import { Fabric } from 'office-ui-fabric-react/lib/Fabric'
 import StartScreen from '../pages/StartScreen'
 import Folders from '../pages/Folders'
 
-import 'office-ui-fabric-react/dist/css/fabric.min.css'
+import 'office-ui-fabric-core/dist/sass/Fabric.scss'
 import './App.scss'
 
 @observer
