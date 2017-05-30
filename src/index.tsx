@@ -4,15 +4,15 @@ import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
 
 import App from './renderer/components/App'
-import AppState from './renderer/stores/AppState'
+import GlobalState from './renderer/stores/GlobalState'
 
-const appState = new AppState()
+const globalState = new GlobalState()
 const container = document.getElementById('root')
 
 const renderApp = (Renderer: any) =>
   render(
     <AppContainer>
-      <Renderer store={appState} />
+      <Renderer store={globalState} />
     </AppContainer>,
     container
   )

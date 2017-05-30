@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { observer } from 'mobx-react'
+import { observer, inject } from 'mobx-react'
 
 import AppState from '../../stores/AppState'
 import { PageProps } from './Page.d'
 
-@observer
+@inject('score') @observer
 export default class Page extends React.PureComponent<PageProps, any> {
   store: AppState
 
