@@ -18,7 +18,7 @@ export default class StartScreen extends Page {
       properties: ['openDirectory']
     }).then((list: string[]) => {
       if (list !== null) {
-        this.store.setScanPath(list[0])
+        this.context.mobxStores.store.setScanPath(list[0])
       }
     })
   }
