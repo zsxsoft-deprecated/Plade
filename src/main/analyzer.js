@@ -1,15 +1,15 @@
 const fs = require('fs')
 const path = require('path')
-const crypto = require('crypto')
 const mkdirp = require('mkdirp')
 const dirName = process.argv[2]
+const cacheName = process.argv[3]
 const parser = require('bindings')({
   bindings: 'PladeParser.node',
   module_root: path.resolve(__dirname, '../../')
 })
 
 const astCacheDir = path.resolve(__dirname, '../../data/cache-ast')
-const astCacheFileName = astCacheDir + '/' + crypto.createHash('md5').update(dirName).digest('hex') + '.json'
+const astCacheFileName = astCacheDir + '/' + cacheName
 mkdirp(astCacheDir, (err) => {
   try {
     if (err) {

@@ -10,8 +10,12 @@ export enum FileASTStatusEnum {
 
 export interface IFileASTStatus {
   path: string
-  size: number,
-  status: FileASTStatusEnum
+  realPath: string
+  md5Path: string
+  size: number
+  analayzeStatus: FileASTStatusEnum
+  diffCount: number
+  diffScore: number[]
 }
 
 export default class GlobalState {
