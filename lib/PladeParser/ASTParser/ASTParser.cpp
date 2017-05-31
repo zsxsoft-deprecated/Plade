@@ -7,6 +7,7 @@
 #include <rapidjson/writer.h>
 #include <memory>
 #include "../Helpers/LibClangHelper.h"
+#include "../../PladeHelper/Locate.h"
 
 namespace PladeParser {
 	using namespace rapidjson;
@@ -145,9 +146,10 @@ namespace PladeParser {
 	void ASTParser::GetCursorKind() {
 		auto curKind = clang_getCursorKind(*cursor);
 		auto curKindName = clang_getCursorKindSpelling(curKind);
-		const char *type;
+//		const char *type;
 		auto curKindString = GetTextWrapper(curKindName);
 
+		/*
 		if (clang_isAttribute(curKind))            type = "Attribute";
 		else if (clang_isDeclaration(curKind))     type = "Declaration";
 		else if (clang_isExpression(curKind))      type = "Expression";
@@ -158,9 +160,11 @@ namespace PladeParser {
 		else if (clang_isTranslationUnit(curKind)) type = "TranslationUnit";
 		else if (clang_isUnexposed(curKind))       type = "Unexposed";
 		else                                       type = "Unknown";
+		*/
 		Value Kind, KindObject, KindTypeObject;
 		Kind.SetObject();
-		KindObject.SetString(type, static_cast<SizeType>(strlen(type)), ret->GetAllocator());
+		KindObject.SetInt(curKind);
+//		KindObject.SetString(type, static_cast<SizeType>(strlen(type)), ret->GetAllocator());
 		KindTypeObject.SetString(curKindString, static_cast<SizeType>(strlen(curKindString)), ret->GetAllocator());
 		Kind.AddMember("kind", KindObject, ret->GetAllocator());
 		Kind.AddMember("type", KindTypeObject, ret->GetAllocator());
@@ -186,7 +190,7 @@ namespace PladeParser {
 			return;
 		}
 		uselessIncludeMap->insert(stringifyName);
-		auto validFileNames = Helpers::getExistsExtensions(Helpers::UTF8ToLocate(fileName));
+		auto validFileNames = Helpers::getExistsExtensions(PladeHelper::Locate::UTF8ToLocate(fileName));
 
 		for (auto& w : validFileNames) {
 			includeMap->insert(w);
@@ -205,7 +209,7 @@ namespace PladeParser {
 			includeObject.SetObject();
 			if (find(visitedIncludeMap->begin(), visitedIncludeMap->end(), w) != visitedIncludeMap->end()) continue;
 			visitedIncludeMap->push_back(w);
-			Helpers::OpenClangUnit<bool>(Helpers::LocateToUTF8(w.c_str()), [this, &includeArray](CXTranslationUnit unit) {
+			Helpers::OpenClangUnit<bool>(PladeHelper::Locate::LocateToUTF8(w.c_str()), [this, &includeArray](CXTranslationUnit unit) {
 				auto cursor = clang_getTranslationUnitCursor(unit);
 				auto parser = new ASTParser(includeMap, uselessIncludeMap, visitedIncludeMap);
 				parser->linkData = true;

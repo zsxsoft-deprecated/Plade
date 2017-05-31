@@ -8,6 +8,7 @@
 #include <clang-c/Index.h>
 #include "IncludeParser.h"
 #include "../Helpers/LibClangHelper.h"
+#include "../../PladeHelper/Locate.h"
 
 namespace PladeParser {
 	namespace IncludeScanner {
@@ -21,7 +22,7 @@ namespace PladeParser {
 		 */
 		vector<string> GetIncludeFiles(const char* fileName) {
 			Initialize();
-			return Helpers::OpenClangUnit<vector<string>>(Helpers::LocateToUTF8(fileName), [](CXTranslationUnit unit) {
+			return Helpers::OpenClangUnit<vector<string>>(PladeHelper::Locate::LocateToUTF8(fileName), [](CXTranslationUnit unit) {
 				auto cursor = clang_getTranslationUnitCursor(unit);
 				clang_visitChildren(cursor, IncludeVisitCallback, nullptr);
 				return GetData();

@@ -2,8 +2,8 @@ const path = require('path')
 const NativeQueue = require('./nativeQueue')
 
 module.exports.default = class AnalyzeQueue {
-  startQueue (list, succeedCallback, rejectCallback) {
+  static startQueue (...args) {
     const queue = new NativeQueue(path.resolve('src/main/analyzer'))
-    queue.startQueue(list, succeedCallback, rejectCallback)
+    queue.startQueue(...args)
   }
 }

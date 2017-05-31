@@ -7,3 +7,6 @@
 [submodule "third-party/rapidjson"]
 	path = lib/third-party/rapidjson
 	url = git@github.com:miloyip/rapidjson.git
+[submodule "third-party/dtl"]
+	path = third-party/dtl
+	url = git@github.com:cubicdaiya/dtl.git

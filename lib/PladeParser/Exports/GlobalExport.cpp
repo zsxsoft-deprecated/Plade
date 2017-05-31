@@ -10,12 +10,13 @@
 #include "../ASTParser/ASTParser.h"
 #include "../Helpers/LibClangHelper.h"
 #include "../IncludeScanner/IncludeScanner.h"
+#include "../../PladeHelper/Locate.h"
 
 namespace PladeParser {
 	namespace Exports {
 
 		std::vector<std::string> FindMainFile(const char* fileName) {
-			return IncludeScanner::FindMainFile(Helpers::UTF8ToLocate(fileName));
+			return IncludeScanner::FindMainFile(PladeHelper::Locate::UTF8ToLocate(fileName));
 		}
 
 		std::string ParseCode(const char* fileName) {

@@ -1,8 +1,7 @@
 ﻿#include <nan.h>
 #include <iostream>
 #include "GlobalExport.h"
-#include "../ASTParser/ASTParser.h"
-#include "../Helpers/LibClangHelper.h"
+#include "../../PladeHelper/Locate.h"
 
 void fnPladeParser(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	if (info.Length() < 1) {
@@ -33,7 +32,7 @@ void GetMainFile(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 	auto array = v8::Array::New(info.GetIsolate(), mainFileArray.size());
 	for (auto it = mainFileArray.begin(); it < mainFileArray.end(); ++it) {
-		array->Set(distance(mainFileArray.begin(), it), v8::String::NewFromUtf8(info.GetIsolate(), PladeParser::Helpers::LocateToUTF8(it->c_str())));
+		array->Set(distance(mainFileArray.begin(), it), v8::String::NewFromUtf8(info.GetIsolate(), PladeHelper::Locate::LocateToUTF8(it->c_str())));
 	}
 
 	info.GetReturnValue().Set(array);

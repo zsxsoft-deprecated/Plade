@@ -16,6 +16,8 @@
         "lib/PladeParser/Helpers/LibClangHelper.h",
         "lib/PladeParser/Helpers/LibClangHelper.cpp",
         "lib/PladeParser/Helpers/ASTParserParent.h",
+        "lib/PladeHelper/Locate.cpp",
+        "lib/PladeHelper/Locate.h"
       ],
       "include_dirs": [
         "<!(node -e \"require('nan')\")",
@@ -32,6 +34,18 @@
         ["target_arch=='x64'", {
           "library_dirs": [ "third-party/x64/clang/" ]
         }]
+      ]
+    },
+    {
+      "target_name": "PladeSimilar",
+      "sources": [
+        "lib/PladeSimilar/Similar.cpp",
+        "lib/PladeHelper/Locate.cpp",
+        "lib/PladeHelper/Locate.h"
+      ],
+      "include_dirs": [
+        "<!(node -e \"require('nan')\")",
+        "third-party/dtl/dtl"
       ]
     }
   ]

@@ -3,17 +3,18 @@ const bluebird = require('bluebird')
 const cp = require('child_process')
 const path = require('path')
 
-module.exports.default = class NativeQueue {
+module.exports = class NativeQueue {
   constructor (forkPath) {
     this.forkPath = forkPath
   }
 
-  startQueue (list, succeedCallback, rejectCallback) {
+  startQueue (list, queuingCallback, succeedCallback, rejectCallback) {
     const cpuCount = os.cpus().length
     const memoryFreeCount = Math.floor(os.totalmem() / 1024 / 1024 / 512)
     const queueCount = cpuCount < memoryFreeCount ? cpuCount : memoryFreeCount
     bluebird.map(list, (item, index) => new Promise((resolve, reject) => {
       const event = cp.fork(path.resolve(this.forkPath), [item])
+      queuingCallback(item, index)
       event.on('message', (message) => {
         try {
           if (message.message === 'ok') {

@@ -36,6 +36,12 @@ export default class Folders extends Page<{}> {
   startAnalyze = () => {
     const currentPath = this.store.scanPath
     AnalyzeQueue.startQueue(this.store.fileASTStatus.map(file => path.resolve(currentPath, file.path)),
+    (item: string, index: number) => {
+      this.store.setFileStatusById(index, {
+        status: FileASTStatusEnum.queuing
+      })
+      this.listRef.forceUpdate()
+    },
     (item: string, index: number, data: any) => {
       this.store.setFileStatusById(index, {
         size: data.size,
@@ -48,6 +54,7 @@ export default class Folders extends Page<{}> {
         size: 0,
         status: FileASTStatusEnum.failed
       })
+      this.listRef.forceUpdate()
     })
   }
 
@@ -60,6 +67,12 @@ export default class Folders extends Page<{}> {
   }
 
   render () {
+    const queueColor = {
+      [FileASTStatusEnum.none]: 'black',
+      [FileASTStatusEnum.succeed]: 'green',
+      [FileASTStatusEnum.failed]: 'red',
+      [FileASTStatusEnum.queuing]: 'blue'
+    }
     const cells = (item: IFileASTStatus, index: number) => (
       <div className='ms-ListScrollingExample-itemCell' data-is-focusable={true}>
         <div className={ css('ms-ListScrollingExample-itemContent', {
@@ -68,10 +81,15 @@ export default class Folders extends Page<{}> {
         }) }>
         <div
           className='ms-ListBasicExample-itemContent'
-          style={{color: item.status === FileASTStatusEnum.succeed ? 'green' : item.status === FileASTStatusEnum.failed ? 'red' : 'auto'}}
+          style={{color: queueColor[item.status]}}
           >
           <div className='ms-ListBasicExample-itemName ms-font-xl'>{item.path}</div>
-          <div className='ms-ListBasicExample-itemIndex'>分析大小：{Math.floor(item.size / 1024)} KiB</div>
+          <div className='ms-ListBasicExample-itemIndex'>
+            {item.status === FileASTStatusEnum.succeed ? <span>分析大小：{Math.floor(item.size / 1024)} KiB</span> : null}
+            {item.status === FileASTStatusEnum.queuing ? <span>正在分析</span> : null}
+            {item.status === FileASTStatusEnum.none ? <span>等待分析</span> : null}
+            {item.status === FileASTStatusEnum.failed ? <span>分析失败</span> : null}
+            </div>
         </div>
         </div>
       </div>)

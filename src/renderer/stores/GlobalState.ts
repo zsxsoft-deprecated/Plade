@@ -4,7 +4,8 @@ import autoSave from './autoSave'
 export enum FileASTStatusEnum {
   none = 0,
   succeed = 1,
-  failed = 2
+  failed = 2,
+  queuing = 3
 }
 
 export interface IFileASTStatus {
