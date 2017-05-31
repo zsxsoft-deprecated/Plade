@@ -2,11 +2,12 @@
   "name": "plade",
   "version": "0.0.1",
   "description": "Plade",
-  "main": "app.js",
+  "category": "Utility",
+  "main": "build/js/main.js",
   "author": "zsx <zsx@zsxsoft.com>",
   "scripts": {
     "hot-updates-server": "cross-env NODE_ENV=development node --trace-warnings ./node_modules/webpack-dev-server/bin/webpack-dev-server --config config/webpack.config.renderer.dev.js",
-    "build": "concurrently \"npm run build-main\" \"npm run build-renderer\"",
+    "build": "concurrently \"npm run build-main\" \"npm run build-renderer\" \"node build.js\"",
     "build-dll": "cross-env NODE_ENV=development node --trace-warnings ./node_modules/webpack/bin/webpack --config config/webpack.config.renderer.dev.dll.js --progress --profile --colors",
     "build-main": "cross-env NODE_ENV=production node --trace-warnings ./node_modules/webpack/bin/webpack --config config/webpack.config.main.prod.js --progress --profile --colors",
     "build-renderer": "cross-env NODE_ENV=production node --trace-warnings ./node_modules/webpack/bin/webpack --config config/webpack.config.renderer.prod.js --progress --profile --colors",
@@ -24,13 +25,12 @@
   "build": {
     "productName": "Plade",
     "appId": "com.zsxsoft.plade",
-    "category": "public.app-category.tools",
     "files": [
-      "dist/",
-      "node_modules/",
-      "app.html",
-      "main.js",
-      "main.js.map",
+      "build/js/**/*",
+      "build/Release/*.node",
+      "src/main/**/*",
+      "node_modules/mkdirp/**/*",
+      "node_modules/bindings/**/*",
       "package.json"
     ],
     "dmg": {
@@ -58,9 +58,6 @@
       ]
     }
   },
-  "directories": {
-    "lib": "lib"
-  },
   "bin": {
     "electron": "./node_modules/.bin/electron"
   },
@@ -85,7 +82,9 @@
     "cross-env": "^5.0.0",
     "css-loader": "^0.28.3",
     "devtron": "^1.4.0",
+    "electron": "^1.6.10",
     "electron-builder": "^18.1.0",
+    "electron-debug": "^1.1.0",
     "electron-devtools-installer": "^2.2.0",
     "electron-rebuild": "^1.5.11",
     "eslint": "^3.19.0",
@@ -126,9 +125,8 @@
     "@types/bluebird": "^3.5.4",
     "bindings": "^1.2.1",
     "bluebird": "^3.5.0",
-    "electron": "^1.6.10",
-    "electron-debug": "^1.1.0",
     "font-awesome": "^4.7.0",
+    "fs-extra": "^3.0.1",
     "history": "^4.6.1",
     "mkdirp": "^0.5.1",
     "mobx": "^3.1.10",

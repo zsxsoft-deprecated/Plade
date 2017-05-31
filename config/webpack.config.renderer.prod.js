@@ -18,8 +18,8 @@ module.exports = merge.smart(baseConfig, {
   entry: ['./src/index'],
 
   output: {
-    path: path.join(__dirname, 'src/dist'),
-    publicPath: '../dist/'
+    path: path.resolve(__dirname, '../', 'build', 'js'),
+    publicPath: './'
   },
 
   module: {

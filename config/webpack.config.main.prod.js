@@ -3,6 +3,7 @@
  */
 
 const webpack = require('webpack')
+const path = require('path')
 const merge = require('webpack-merge')
 const BabiliPlugin = require('babili-webpack-plugin')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
@@ -13,12 +14,12 @@ module.exports = merge.smart(baseConfig, {
 
   target: 'electron-main',
 
-  entry: ['./src/main.prod'],
+  entry: ['./src/main'],
 
   // 'main.js' in root
   output: {
-    path: __dirname,
-    filename: './src/main.prod.js'
+    path: path.resolve(__dirname, '../', 'build', 'js'),
+    filename: 'main.js'
   },
 
   plugins: [

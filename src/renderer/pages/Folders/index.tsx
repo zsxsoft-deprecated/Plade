@@ -8,7 +8,7 @@ import { ProgressIndicator } from 'office-ui-fabric-react/lib/ProgressIndicator'
 import Page from '../../components/Page'
 import AnalyzeQueue from '../../../shared/analyzeQueue'
 import diffQueue from '../../../shared/diffQueue'
-import GlobalState, { FileASTStatusEnum, IFileASTStatus } from '../../stores/GlobalState'
+import GlobalState, { FileASTStatusEnum } from '../../stores/GlobalState'
 import getCacheFileName from '../../../shared/getCacheFileName'
 
 @inject('store') @observer
