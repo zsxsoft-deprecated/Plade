@@ -4,13 +4,19 @@
 #include <rapidjson/document.h>
 #include "../Helpers/ASTParserParent.h"
 #include <vector>
+#include <set>
+#include <memory>
 
 namespace PladeParser {
 
-	class ASTParser: public Helpers::ASTParserParent {
+	class ASTParser : public Helpers::ASTParserParent {
 	public:
 		ASTParser();
-		explicit ASTParser(std::vector<std::string>);
+		explicit ASTParser(
+			std::shared_ptr<std::set<std::string>>,
+			std::shared_ptr<std::set<std::string>>,
+			std::shared_ptr<std::vector<std::string>>
+		);
 		~ASTParser();
 		void GetSpell();
 		void GetType();
@@ -19,13 +25,16 @@ namespace PladeParser {
 		bool GetFileNameAndCheckCanWeContinue();
 		void GetUsr();
 		void GetCursorKind();
-		void GetIncludedFile();
+		void AddToIncludeMap();
+		void ManualLinker();
 		static CXChildVisitResult visitChildrenCallback(CXCursor cursor, CXCursor parent, CXClientData client_data);
 		const char* GetClangVersion();
 		rapidjson::Document* GetJSONDocument() const;
 
-		std::vector<std::string> visitedIncludeMap;
-
+		std::shared_ptr<std::set<std::string>> includeMap;
+		std::shared_ptr<std::set<std::string>> uselessIncludeMap;
+		std::shared_ptr<std::vector<std::string>> visitedIncludeMap;
+		bool linkData = false;
 	protected:
 		rapidjson::Document* ret;
 		CXCursor* cursor = nullptr;

@@ -16,13 +16,18 @@ namespace PladeParser {
 		ret = new Document();
 		ret->Parse("[]");
 		singleItem = new Value();
+		includeMap = make_shared<set<string>>();
+		visitedIncludeMap = make_shared<vector<string>>();
+		uselessIncludeMap = make_shared<set<string>>();
 	}
 
-	ASTParser::ASTParser(vector<string> visited) {
+	ASTParser::ASTParser(shared_ptr<set<string>> includes, shared_ptr<set<string>> useless, shared_ptr<vector<string>> visited) {
 		ret = new Document();
 		ret->Parse("[]");
 		singleItem = new Value();
-		copy(visited.begin(), visited.end(), back_inserter(visitedIncludeMap));
+		includeMap = includes;
+		uselessIncludeMap = useless;
+		visitedIncludeMap = visited;
 	}
 
 	ASTParser::~ASTParser() {
@@ -100,7 +105,7 @@ namespace PladeParser {
 
 	bool ASTParser::GetFileNameAndCheckCanWeContinue() {
 		auto loc = clang_getCursorLocation(*cursor);
-		if (clang_Location_isFromMainFile(clang_getCursorLocation(*cursor)) == 0) return false;
+		// if (clang_Location_isFromMainFile(clang_getCursorLocation(*cursor)) == 0) return false;
 		Value location;
 		CXFile file;
 		unsigned line, column, offset;
@@ -162,35 +167,60 @@ namespace PladeParser {
 		singleItem->AddMember("kind", Kind, ret->GetAllocator());
 	}
 
-	void ASTParser::GetIncludedFile() {
-		auto included = clang_getIncludedFile(*cursor);
-		if (included == nullptr) return;
-		auto includedFileName = clang_getFileName(included);
+	void ASTParser::AddToIncludeMap() {
+		auto loc = clang_getCursorLocation(*cursor);
+		CXFile file;
+#ifdef DEBUG
+		unsigned line, col, offset;
+		clang_getFileLocation(loc, &file, &line, &col, &offset);
+		printf("%d %d %d\n", line, col, offset);
+#else
+		clang_getFileLocation(loc, &file, nullptr, nullptr, nullptr);
+#endif
+		if (file == nullptr) return;
+		auto includedFileName = clang_getFileName(file);
 		auto fileName = GetTextWrapper(includedFileName);
 		if (Helpers::isInSystemInclude(fileName)) return;
-		auto validFileNames = Helpers::getExistsExtensions(fileName);
+		auto stringifyName = string(fileName);
+		if (uselessIncludeMap->find(stringifyName) != uselessIncludeMap->end()) {
+			return;
+		}
+		uselessIncludeMap->insert(stringifyName);
+		auto validFileNames = Helpers::getExistsExtensions(Helpers::UTF8ToLocate(fileName));
 
-		Value includeArray;
-		includeArray.SetArray();
 		for (auto& w : validFileNames) {
-			if (find(visitedIncludeMap.begin(), visitedIncludeMap.end(), w) != visitedIncludeMap.end()) continue;
-			visitedIncludeMap.push_back(w);
-			Helpers::OpenClangUnit<bool>(w.c_str(), [this, &includeArray](CXTranslationUnit unit) {
+			includeMap->insert(w);
+		}
+
+		// singleItem->AddMember("included", includeArray.Move(), ret->GetAllocator());
+		// Value string;
+		// string.SetString(fileName, static_cast<SizeType>(strlen(fileName)), ret->GetAllocator());
+		// singleItem->AddMember("path", string, ret->GetAllocator());
+	}
+
+	void ASTParser::ManualLinker() {
+		for (auto& w : *includeMap) {
+			Value includeArray, includeObject;
+			includeArray.SetArray();
+			includeObject.SetObject();
+			if (find(visitedIncludeMap->begin(), visitedIncludeMap->end(), w) != visitedIncludeMap->end()) continue;
+			visitedIncludeMap->push_back(w);
+			Helpers::OpenClangUnit<bool>(Helpers::LocateToUTF8(w.c_str()), [this, &includeArray](CXTranslationUnit unit) {
 				auto cursor = clang_getTranslationUnitCursor(unit);
-				auto parser = new ASTParser(visitedIncludeMap);
+				auto parser = new ASTParser(includeMap, uselessIncludeMap, visitedIncludeMap);
+				parser->linkData = true;
 				clang_visitChildren(cursor, parser->visitChildrenCallback, parser);
-				this->visitedIncludeMap.clear();
-				copy(parser->visitedIncludeMap.begin(), parser->visitedIncludeMap.end(), back_inserter(this->visitedIncludeMap));
 				includeArray.PushBack(parser->GetJSONDocument()->Move(), ret->GetAllocator());
 				subParsers.push_back(parser);
 				return true;
 			});
-		}
+			Value includeString;
 
-		singleItem->AddMember("included", includeArray.Move(), ret->GetAllocator());
-		// Value string;
-		// string.SetString(fileName, static_cast<SizeType>(strlen(fileName)), ret->GetAllocator());
-		// singleItem->AddMember("path", string, ret->GetAllocator());
+			includeString.SetString(w.c_str(), w.length(), ret->GetAllocator());
+			includeObject.AddMember("fileName", includeString.Move(), ret->GetAllocator());
+			includeObject.AddMember("includes", includeArray.Move(), ret->GetAllocator());
+			ret->PushBack(includeObject, ret->GetAllocator());
+		}
 	}
 
 	CXChildVisitResult ASTParser::visitChildrenCallback(CXCursor cursor, CXCursor parent, CXClientData client_data) {
@@ -201,28 +231,35 @@ namespace PladeParser {
 		self->cursor = &cursor;
 		self->parentCursor = &parent;
 
+		self->AddToIncludeMap();
+		if (!self->linkData) {
+			return CXChildVisit_Continue;
+		}
+
 		if (!self->GetFileNameAndCheckCanWeContinue()) {
 			return CXChildVisit_Continue;
 		}
 
+		/*
 		Value Level;
 		Level.SetInt(self->currentLevel);
 		self->singleItem->AddMember("level", Level.Move(), self->ret->GetAllocator());
+		*/
 
 		// self->GetSpell();
 		self->GetLinkage();
 		self->GetCursorKind();
 		self->GetType();
 		// self->GetParent();
-		self->GetIncludedFile();
 		// self->GetUsr();
 
 		self->ret->PushBack(self->singleItem->Move(), self->ret->GetAllocator());
 		//self->singleItem->;
 		self->singleItem->SetObject();
+
 		self->currentLevel++;
-		clang_visitChildren(cursor, visitChildrenCallback, static_cast<void*>(self));
-		self->currentLevel--;
+//		clang_visitChildren(cursor, visitChildrenCallback, static_cast<void*>(self));
+//		self->currentLevel--;
 		return CXChildVisit_Recurse;
 	}
 

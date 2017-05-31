@@ -21,7 +21,7 @@ namespace PladeParser {
 		 */
 		vector<string> GetIncludeFiles(const char* fileName) {
 			Initialize();
-			return Helpers::OpenClangUnit<vector<string>>(fileName, [](CXTranslationUnit unit) {
+			return Helpers::OpenClangUnit<vector<string>>(Helpers::LocateToUTF8(fileName), [](CXTranslationUnit unit) {
 				auto cursor = clang_getTranslationUnitCursor(unit);
 				clang_visitChildren(cursor, IncludeVisitCallback, nullptr);
 				return GetData();

@@ -19,12 +19,13 @@ namespace PladeParser {
 		}
 
 		std::string ParseCode(const char* fileName) {
-			return Helpers::OpenClangUnit<std::string>(Helpers::UTF8ToLocate(fileName), [](CXTranslationUnit unit) {
+			return Helpers::OpenClangUnit<std::string>(fileName, [](CXTranslationUnit unit) {
 				auto cursor = clang_getTranslationUnitCursor(unit);
 				auto parser = new ASTParser();
 				rapidjson::StringBuffer buffer;
 				rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 				clang_visitChildren(cursor, ASTParser::visitChildrenCallback, parser);
+				parser->ManualLinker();
 				parser->GetJSONDocument()->Accept(writer);
 				auto ret = std::string(buffer.GetString());
 				delete parser;

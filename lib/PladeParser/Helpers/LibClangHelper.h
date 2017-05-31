@@ -11,14 +11,6 @@
 
 namespace PladeParser {
 	namespace Helpers {
-
-		/**
-		 * \brief UTF-8 char* to ANSI char* (Important in Windows)
-		 * \param fileNameChar 
-		 * \return 
-		 */
-		const char* UTF8ToLocate(const char* fileNameChar);
-
 		/**
 		 * \brief Parse a Clang Unit to callback function
 		 * \tparam T
@@ -30,7 +22,7 @@ namespace PladeParser {
 		template<typename T> T OpenClangUnit(
 			const char* fileName,
 			std::function<T(CXTranslationUnit)> callback,
-			unsigned CXTranslationUnitFlags = CXTranslationUnit_CacheCompletionResults | CXTranslationUnit_DetailedPreprocessingRecord
+			unsigned CXTranslationUnitFlags = CXTranslationUnit_CacheCompletionResults
 		) {
 			using namespace PladeParser;
 			T returnData;
@@ -72,7 +64,7 @@ namespace PladeParser {
 		 * \param fileName
 		 * \return
 		 */
-		std::vector<std::string> getExistsExtensions(std::string fileName);
+		std::vector<std::string> getExistsExtensions(const char* fileName);
 	}
 }
 #endif
