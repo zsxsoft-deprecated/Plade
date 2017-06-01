@@ -26,8 +26,8 @@ export default class Folders extends Page<{
     this.store = this.props.store
     this.state = {
       currentSelectedLeftIndex: 0,
-      maybeThreshold: 0.6,
-      mustbeThreshold: 0.3
+      maybeThreshold: 0.1,
+      mustbeThreshold: 0.02
     }
   }
 

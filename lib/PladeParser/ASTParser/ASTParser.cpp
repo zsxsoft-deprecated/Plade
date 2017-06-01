@@ -250,12 +250,12 @@ namespace PladeParser {
 		self->singleItem->AddMember("level", Level.Move(), self->ret->GetAllocator());
 		*/
 
-		// self->GetSpell();
+		self->GetSpell();
 		self->GetLinkage();
 		self->GetCursorKind();
 		self->GetType();
 		// self->GetParent();
-		// self->GetUsr();
+		self->GetUsr();
 
 		self->ret->PushBack(self->singleItem->Move(), self->ret->GetAllocator());
 		//self->singleItem->;

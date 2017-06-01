@@ -11,8 +11,8 @@ double GetSimilarData(const char* fileName1, const char* fileName2) {
 	std::string file2((std::istreambuf_iterator<char>(file2Stream)), std::istreambuf_iterator<char>());
 	dtl::Diff<char, std::string> d(file1, file2);
 	// d.onOnlyEditDistance();
-	/// d.onHuge();
-	// d.onUnserious();
+	d.onHuge();
+	d.onUnserious();
 	d.compose();
 	auto data = d.getEditDistance();
 	std::cout << data << std::endl;

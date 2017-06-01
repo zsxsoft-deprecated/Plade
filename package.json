@@ -27,11 +27,13 @@
     "appId": "com.zsxsoft.plade",
     "files": [
       "build/js/**/*",
+      "package.json"
+    ],
+    "extraFiles": [
       "build/Release/*.node",
-      "src/main/**/*",
       "node_modules/mkdirp/**/*",
       "node_modules/bindings/**/*",
-      "package.json"
+      "src/main/**/*"
     ],
     "dmg": {
       "contents": [
