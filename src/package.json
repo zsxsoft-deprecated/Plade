@@ -1,7 +1,0 @@
-{
-  "name": "app",
-  "version": "0.0.0",
-  "description": "My fantastic app",
-  "author": "zsx",
-  "main": "./main.js"
-}
