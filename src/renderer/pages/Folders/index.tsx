@@ -13,7 +13,9 @@ import getCacheFileName from '../../../shared/getCacheFileName'
 
 @inject('store') @observer
 export default class Folders extends Page<{
-  currentSelectedLeftIndex: number
+  currentSelectedLeftIndex: number,
+  maybeThreshold: number,
+  mustbeThreshold: number
 }> {
   store: GlobalState
   listRef: any
@@ -23,7 +25,9 @@ export default class Folders extends Page<{
     super(props)
     this.store = this.props.store
     this.state = {
-      currentSelectedLeftIndex: 0
+      currentSelectedLeftIndex: 0,
+      maybeThreshold: 0.6,
+      mustbeThreshold: 0.3
     }
   }
 
@@ -31,14 +35,17 @@ export default class Folders extends Page<{
     const currentPath = this.store.scanPath
     if (this.store.fileASTStatus.length === 0) {
       const files = fs.readdirSync(currentPath).filter(file => fs.statSync(path.resolve(currentPath, file)).isDirectory())
-      const data = files.map(filePath => ({
+      const data = files.map((filePath, index) => ({
         path: filePath,
         realPath: path.resolve(currentPath, filePath),
         md5Path: getCacheFileName(path.resolve(currentPath, filePath)),
         size: 0,
         analayzeStatus: FileASTStatusEnum.none,
         diffCount: 0,
-        diffScore: new Array(files.length).fill(0)
+        diffScore: new Array(files.length).fill(0),
+        maybeItemsCount: 0,
+        mustbeItemsCount: 0,
+        index
       }))
       this.store.fileASTStatus = data
     }
@@ -105,21 +112,28 @@ export default class Folders extends Page<{
         if (anotherIndex === -1) return
         const updateStatus1 = this.store.fileASTStatus[index].diffScore.slice(0)
         const updateStatus2 = anotherItem.diffScore.slice(0)
+        const maybePlus = (message.score > this.state.mustbeThreshold && message.score <= this.state.maybeThreshold ? 1 : 0)
+        const mustbePlus = (message.score > 0 && message.score <= this.state.mustbeThreshold ? 1 : 0)
         updateStatus1[anotherIndex] = message.score
         updateStatus2[index] = message.score
         this.store.setFileStatusById(index, {
           diffCount: this.store.fileASTStatus[index].diffCount + 1,
-          diffScore: updateStatus1
+          diffScore: updateStatus1,
+          maybeItemsCount: this.store.fileASTStatus[index].maybeItemsCount + maybePlus,
+          mustbeItemsCount: this.store.fileASTStatus[index].mustbeItemsCount + mustbePlus
         })
         this.store.setFileStatusById(anotherIndex, {
           diffCount: anotherItem.diffCount + 1,
-          diffScore: updateStatus2
+          diffScore: updateStatus2,
+          maybeItemsCount: anotherItem.maybeItemsCount + maybePlus,
+          mustbeItemsCount: anotherItem.mustbeItemsCount + mustbePlus
         })
       }
     )
   }
 
   backToTop = () => {
+    this.store.fileASTStatus = []
     this.props.history.replace('/')
   }
 
@@ -134,6 +148,14 @@ export default class Folders extends Page<{
     }
     return this.mouseDownFunctionCache[index]
   }
+  startCheck = () => {}
+
+  getDiffColor = (data: number) => {
+    if (data === 0) return 'green'
+    if (data <= this.state.mustbeThreshold) return 'red'
+    if (data <= this.state.maybeThreshold) return 'yellow'
+    return 'green'
+  }
 
   render () {
     const queueColor = {
@@ -142,12 +164,13 @@ export default class Folders extends Page<{
       [FileASTStatusEnum.failed]: 'red',
       [FileASTStatusEnum.queuing]: 'blue'
     }
+
     return (
       <div className='ms-Grid'>
         <div className='ms-Grid-row'>
           <div className='ms-Grid-col ms-sm5'>
             <div className='ms-List'>
-              {this.store.fileASTStatus.map((item, index) => (
+              {this.store.fileASTStatus.sort((a, b) => b.mustbeItemsCount - a.mustbeItemsCount).map((item, index) => (
                 <div key={item.path} data-is-focusable={true}>
                   <div className={ css('ms-ListScrollingExample-itemContent', {
                     'ms-ListScrollingExample-itemContent-even': index % 2 === 0,
@@ -156,11 +179,15 @@ export default class Folders extends Page<{
                   <div
                     className='ms-ListItem is-selectable'
                     style={{color: queueColor[item.analayzeStatus]}}
-                    onMouseDown={this.onItemMouseDown(index)}
+                    onMouseDown={this.onItemMouseDown(item.index)}
                     >
                     <div className='ms-font-xl'>{item.path}</div>
                     <div className='ms-ListBasicExample-itemIndex'>
-                      {item.analayzeStatus === FileASTStatusEnum.succeed ? <span>分析大小：{Math.floor(item.size / 1024)} KiB</span> : null}
+                      {item.analayzeStatus === FileASTStatusEnum.succeed ? <span>
+                          <span>分析大小：{Math.round(item.size / 1024)} KiB</span>
+                          <span>&nbsp;&nbsp;疑似数目：{item.maybeItemsCount}</span>
+                          <span>&nbsp;&nbsp;确认数目：{item.mustbeItemsCount}</span>
+                        </span> : null}
                       {item.analayzeStatus === FileASTStatusEnum.queuing ? <span>正在分析</span> : null}
                       {item.analayzeStatus === FileASTStatusEnum.none ? <span>等待分析</span> : null}
                       {item.analayzeStatus === FileASTStatusEnum.failed ? <span>分析失败</span> : null}
@@ -193,6 +220,12 @@ export default class Folders extends Page<{
                 style={{marginBottom: '1.5em'}}
               />
               <DefaultButton
+                data-automation-id='checkButton'
+                text='判断'
+                onClick={this.startCheck}
+                style={{marginBottom: '1.5em'}}
+              />
+              <DefaultButton
                 data-automation-id='backButton'
                 text='返回'
                 onClick={this.backToTop}
@@ -200,18 +233,23 @@ export default class Folders extends Page<{
             </div>
           </div>
           <div className='ms-Grid-col ms-sm5' style={{float: 'right'}}>
-            <div>达到阈值数：</div>
             <div className='ms-List'>
-              {this.store.fileASTStatus.map((item, index) => (
+              {this.store.fileASTStatus
+              .sort((a, b) => a.diffScore[this.state.currentSelectedLeftIndex] - b.diffScore[this.state.currentSelectedLeftIndex])
+              .map((item, index) => (
                 <div key={item.path} data-is-focusable={true}>
                   <div>
                   <div
                     className='ms-ListItem'
-                    style={{color: queueColor[item.analayzeStatus]}}
+                    style={{color:
+                      item.diffScore[this.state.currentSelectedLeftIndex] === 0 ?
+                      queueColor[item.analayzeStatus] :
+                      this.getDiffColor(item.diffScore[this.state.currentSelectedLeftIndex])
+                    }}
                     >
                     <div className='ms-font-xl'>{item.path}</div>
                     <div className='ms-ListBasicExample-itemIndex'>
-                      对比结果：{this.store.fileASTStatus[this.state.currentSelectedLeftIndex].diffScore[index]}
+                      对比结果：{item.diffScore[this.state.currentSelectedLeftIndex]}
                     </div>
                   </div>
                   </div>

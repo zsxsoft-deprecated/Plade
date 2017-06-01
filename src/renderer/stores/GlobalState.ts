@@ -15,7 +15,10 @@ export interface IFileASTStatus {
   size: number
   analayzeStatus: FileASTStatusEnum
   diffCount: number
-  diffScore: number[]
+  diffScore: number[],
+  maybeItemsCount: number,
+  mustbeItemsCount: number,
+  index: number
 }
 
 export default class GlobalState {
